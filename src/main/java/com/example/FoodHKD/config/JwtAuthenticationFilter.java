@@ -18,6 +18,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+//Spring Security mặc định không hiểu JWT -> nơi bạn tự định nghĩa cách xử lý token
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 

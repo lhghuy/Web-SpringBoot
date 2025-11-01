@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.example.FoodHKD.model.Category; // Ensure this path matches the actual location of FoodItem
-import com.example.FoodHKD.model.FoodItem; // Ensure this path matches the actual location of Category
+import com.example.FoodHKD.model.Category; 
+import com.example.FoodHKD.model.FoodItem; 
 
 public interface FoodItemRepository extends JpaRepository<FoodItem, Integer> {
     List<FoodItem> findByNameContainingIgnoreCase(String keyword);

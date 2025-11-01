@@ -255,6 +255,11 @@
               <i class="fas fa-receipt"></i>Quản lý hoá đơn
             </a>
           </li>
+          <li>
+            <a th:href="@{/admin/reports}" >
+              <i class="fas fa-chart-bar"></i>Báo cáo kinh doanh
+            </a>
+          </li>
         </ul>
       </div>
     </div>
@@ -443,7 +448,7 @@
               }
             } catch (error) {
               console.error("Error loading products:", error);
-              this.error = "Lỗi kết nối. Vui lòng thử lại sau.";
+              this.error = "Sản phẩm đang được order, không thể xóa.";
             } finally {
               this.loading = false;
             }
@@ -471,7 +476,7 @@
               }
             } catch (error) {
               console.error("Error deleting product:", error);
-              this.showAlert("error", "Lỗi kết nối. Vui lòng thử lại sau.");
+              this.showAlert("error", "Không thể xóa sản phẩm này, vì đang được Order.");
             }
           },
 

@@ -41,8 +41,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Username not found"));
+        // return userRepository.findByUsername(username)
+        //         .orElseThrow(() -> new RuntimeException("Username not found"));
+        return userRepository.findByUsername(username).orElse(null);
+
     }
 
     @Override
@@ -53,7 +55,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUser(Integer id, User updatedUser) {
-        User existingUser = getUserById(id); // Throws exception if not found
+        User existingUser = getUserById(id); 
 
         existingUser.setUsername(updatedUser.getUsername());
         existingUser.setFullName(updatedUser.getFullName());

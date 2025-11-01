@@ -1,28 +1,28 @@
 body {
-  background-color: #fff; /* Nền trắng */
+  background-color: #fff; 
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  color: #a81c2d; /* Màu đỏ chủ đạo */
+  color: #a81c2d; 
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* Ensure body takes full viewport height */
+  min-height: 100vh; 
 }
 
 
 .page-title {
   font-size: 1.8em;
   padding: 15px;
-  background-color: #a81c2d; /* Nền đỏ */
-  color: #fff; /* Chữ trắng */
+  background-color: #a81c2d; 
+  color: #fff; 
   text-align: center;
-  margin: 0; /* Remove margin to stick to top */
+  margin: 0;
   font-weight: bold;
 }
 
 .page-title .badge {
-  background-color: #fff; /* Nền trắng cho badge */
-  color: #a81c2d; /* Chữ đỏ */
+  background-color: #fff; 
+  color: #a81c2d;
   padding: 2px 6px;
   border-radius: 10px;
   font-size: 0.8em;
@@ -43,41 +43,41 @@ body {
 }
 
 .event-item {
-  padding: 10px; /* Padding nhỏ */
-  margin-bottom: 0; /* Loại bỏ khoảng cách dưới */
+  padding: 10px; 
+  margin-bottom: 0; 
 }
 
 .light-bg {
-  background-color: #f5f5f5; /* Trắng nhạt */
+  background-color: #f5f5f5;
 }
 
 .dark-bg {
-  background-color: #e8e8e8; /* Trắng đậm */
+  background-color: #e8e8e8; 
 }
 
 .event-content {
   display: flex;
-  flex-direction: row; /* Đặt ảnh và thông tin cạnh nhau */
-  align-items: center; /* Căn giữa theo chiều dọc */
-  width: 80%; /* Tăng chiều rộng để chứa ảnh lớn hơn */
-  gap: 20px; /* Khoảng cách giữa ảnh và thông tin */
+  flex-direction: row; 
+  align-items: center; 
+  width: 80%; 
+  gap: 20px; 
 }
 
 .event-content-left {
   margin-left: 0;
-  margin-right: auto; /* Đẩy nội dung về bên trái */
+  margin-right: auto; 
 }
 
 .event-content-left .event-image {
-  order: 1; /* Ảnh bên trái */
+  order: 1;
 }
 
 .event-content-left .event-info {
-  order: 2; /* Thông tin bên phải ảnh */
+  order: 2; 
 }
 
 .event-content-right {
-  margin-left: auto; /* Đẩy nội dung về bên phải */
+  margin-left: auto; 
   margin-right: 0;
 }
 
@@ -86,14 +86,14 @@ body {
 }
 
 .event-content-right .event-info {
-  order: 1; /* Thông tin bên trái ảnh */
+  order: 1; 
 }
 
 .event-image {
-  width: 500px; /* Tăng kích thước ảnh từ 400px lên 500px */
-  height: 250px; /* Tăng từ 200px lên 250px */
-  background-color: #fff; /* Nền trắng */
-  border: 3px solid #a81c2d; /* Viền đỏ */
+  width: 500px; 
+  height: 250px; 
+  background-color: #fff; 
+  border: 3px solid #a81c2d; 
   overflow: hidden;
 }
 
@@ -104,25 +104,25 @@ body {
 }
 
 .event-info {
-  flex: 1; /* Thông tin chiếm không gian còn lại */
-  text-align: left; /* Căn trái thông tin */
+  flex: 1; 
+  text-align: left;
 }
 
 .event-title {
-  font-size: 1.5em; /* Kích thước tiêu đề */
+  font-size: 1.5em; 
   font-weight: bold;
   color: #a81c2d;
   margin-bottom: 5px;
 }
 
 .event-description {
-  font-size: 1.1em; /* Kích thước mô tả */
+  font-size: 1.1em; 
   color: #a81c2d;
   margin-bottom: 5px;
 }
 
 .event-time {
-  font-size: 1.1em; /* Kích thước thời gian */
+  font-size: 1.1em; 
   font-weight: bold;
   color: #a81c2d;
 }

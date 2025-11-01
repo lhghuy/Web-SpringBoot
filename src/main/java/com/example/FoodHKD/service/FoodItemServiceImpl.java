@@ -1,16 +1,24 @@
 package com.example.FoodHKD.service;
 
-import com.example.FoodHKD.model.FoodItem;
-import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.FoodHKD.model.FoodItem;
+import com.example.FoodHKD.model.InventoryLog;
 import com.example.FoodHKD.repository.FoodItemRepository;
+import com.example.FoodHKD.repository.InventoryLogRepository;
 
 @Service
 public class FoodItemServiceImpl implements FoodItemService {
 
     @Autowired
     private FoodItemRepository foodItemRepository;
+
+    @Autowired
+    private InventoryLogRepository inventoryLogRepository;
 
     @Override
     public List<FoodItem> getAllFoodItems() {
@@ -23,9 +31,20 @@ public class FoodItemServiceImpl implements FoodItemService {
                 .orElseThrow(() -> new RuntimeException("Food item not found"));
     }
 
-    @Override
+     @Override
     public FoodItem saveFoodItem(FoodItem foodItem) {
-        return foodItemRepository.save(foodItem);
+        FoodItem savedFoodItem = foodItemRepository.save(foodItem);
+
+        // Tạo log nhập kho
+        InventoryLog log = new InventoryLog();
+        log.setFood(savedFoodItem);
+        log.setChangeQuantity(savedFoodItem.getQuantity());  // số lượng mới nhập
+        log.setNote("Nhập kho");
+        log.setCreatedAt(LocalDateTime.now());
+
+        inventoryLogRepository.save(log);
+
+        return savedFoodItem;
     }
 
     @Override
@@ -33,22 +52,53 @@ public class FoodItemServiceImpl implements FoodItemService {
         return foodItemRepository.findByQuantityGreaterThan(0);
     }
 
-    @Override
+   @Override
     public FoodItem createFoodItem(FoodItem foodItem) {
-        return foodItemRepository.save(foodItem);
+        FoodItem savedFoodItem = foodItemRepository.save(foodItem);
+
+        InventoryLog log = new InventoryLog();
+        log.setFood(savedFoodItem);
+        log.setChangeQuantity(savedFoodItem.getQuantity());  // số lượng mới nhập
+        log.setNote("tạo mới");
+        log.setCreatedAt(LocalDateTime.now());
+
+        inventoryLogRepository.save(log);
+
+        return savedFoodItem;
     }
 
-    @Override
+
+     @Override
     public FoodItem updateFoodItem(Integer id, FoodItem updated) {
         FoodItem foodItem = getFoodItemById(id);
+
+        int oldQuantity = foodItem.getQuantity();
+
         foodItem.setName(updated.getName());
         foodItem.setDescription(updated.getDescription());
         foodItem.setPrice(updated.getPrice());
         foodItem.setAnh(updated.getAnh());
         foodItem.setCategory(updated.getCategory());
         foodItem.setQuantity(updated.getQuantity());
-        return foodItemRepository.save(foodItem);
+
+        FoodItem savedFoodItem = foodItemRepository.save(foodItem);
+
+        int quantityChange = updated.getQuantity() - oldQuantity;
+
+        if (quantityChange != 0) {
+            InventoryLog log = new InventoryLog();
+            log.setFood(savedFoodItem);
+            log.setChangeQuantity(savedFoodItem.getQuantity()); 
+            log.setNote("tạo mới");
+            log.setCreatedAt(LocalDateTime.now());
+            log.setCreatedBy(null);
+
+            inventoryLogRepository.save(log);
+        }
+
+        return savedFoodItem;
     }
+
 
     @Override
     public void deleteFoodItem(Integer id) {

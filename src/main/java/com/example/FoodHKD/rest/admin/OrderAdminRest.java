@@ -1,18 +1,29 @@
 package com.example.FoodHKD.rest.admin;
 
-import com.example.FoodHKD.model.Order;
-import com.example.FoodHKD.model.OrderDetail;
-import com.example.FoodHKD.repository.OrderRepository;
-import com.example.FoodHKD.repository.OrderDetailRepository;
-import com.example.FoodHKD.repository.TableRepository;
-import com.example.FoodHKD.repository.UserRepository;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.*;
+import com.example.FoodHKD.model.Order;
+import com.example.FoodHKD.model.OrderDetail;
+import com.example.FoodHKD.repository.OrderDetailRepository;
+import com.example.FoodHKD.repository.OrderRepository;
+import com.example.FoodHKD.repository.TableRepository;
+import com.example.FoodHKD.repository.UserRepository;
 
 @RestController
 @RequestMapping("/api/admin/orders")
@@ -35,7 +46,6 @@ public class OrderAdminRest {
         try {
             List<Order> orders = orderRepository.findAll();
 
-            // Calculate totals for each order
             List<Map<String, Object>> ordersWithTotals = new ArrayList<>();
             for (Order order : orders) {
                 Map<String, Object> orderData = convertOrderToMap(order);

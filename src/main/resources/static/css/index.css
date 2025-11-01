@@ -14,14 +14,14 @@ nav {
   z-index: 1000;
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Đưa logo, menu, và phần bên phải về hai bên */
+  justify-content: space-between; 
   padding: 10px 20px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Định dạng logo */
 .logo img {
-  height: 70px; /* Điều chỉnh kích thước logo */
+  height: 70px; 
 }
 
 /* Chứa menu chính */

@@ -1,22 +1,19 @@
 package com.example.FoodHKD.controller;
 
-import com.example.FoodHKD.model.User;
-import com.example.FoodHKD.repository.FoodItemRepository;
-import com.example.FoodHKD.service.UserService;
+import java.security.Principal;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.security.Principal;
-import java.util.List;
+import com.example.FoodHKD.model.User;
+import com.example.FoodHKD.service.UserService;
 
 @Controller
 public class PageController {
-
-    @Autowired
-    private FoodItemRepository foodItemRepository;
 
     @Autowired
     private UserService userService;
