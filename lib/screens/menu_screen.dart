@@ -40,23 +40,28 @@ class _MenuScreenState extends State<MenuScreen> {
         api.get('/client/foods/categories'),
       ]);
 
-      final foodsResp = responses[0];
-      final catsResp = responses[1];
+      final foodsResp = responses[0]; // foodsResp is already Map<String, dynamic>
+      final catsResp = responses[1]; // catsResp is already Map<String, dynamic>
 
-      // defensive parsing:
-      final foodsData = _extractDataFromResponse(foodsResp.data);
-      final catsData = _extractDataFromResponse(catsResp.data);
+      // SỬA LỖI TẠI ĐÂY:
+      // foodsResp và catsResp đã là dữ liệu JSON (Map<String, dynamic>) từ API.
+      // Do đó, truyền trực tiếp chúng vào _extractDataFromResponse.
+      final foodsData = _extractDataFromResponse(foodsResp);
+      final catsData = _extractDataFromResponse(catsResp);
 
       // Normalize to List<Map<String,dynamic>>
-      allFoods = (foodsData is List) ? List<Map<String, dynamic>>.from(foodsData.map((e) => Map<String, dynamic>.from(e as Map))) : [];
-      categories = (catsData is List) ? List<Map<String, dynamic>>.from(catsData.map((e) => Map<String, dynamic>.from(e as Map))) : [];
+      allFoods = (foodsData is List) ? List<Map<String, dynamic>>.from(
+          foodsData.map((e) => Map<String, dynamic>.from(e as Map))) : [];
+      categories = (catsData is List) ? List<Map<String, dynamic>>.from(
+          catsData.map((e) => Map<String, dynamic>.from(e as Map))) : [];
 
       // if categories empty, keep default 'all'
       if (categories.isEmpty) {
         selectedCategory = 'all';
       } else {
         // ensure selectedCategory remains valid
-        if (selectedCategory != 'all' && !categories.any((c) => c['categoryID'] == selectedCategory)) {
+        if (selectedCategory != 'all' &&
+            !categories.any((c) => c['categoryID'] == selectedCategory)) {
           selectedCategory = 'all';
         }
       }
@@ -71,11 +76,19 @@ class _MenuScreenState extends State<MenuScreen> {
   dynamic _extractDataFromResponse(dynamic respData) {
     try {
       if (respData == null) return [];
-      if (respData is Map && respData.containsKey('success') && respData.containsKey('data')) {
-        return respData['data'];
+      // If respData is already a List (raw list), return it directly.
+      if (respData is List) return respData;
+
+      // If respData is a Map, check for 'success' and 'data' keys.
+      if (respData is Map) {
+        if (respData.containsKey('success') && respData.containsKey('data')) {
+          return respData['data'];
+        }
+        if (respData.containsKey('data')) {
+          return respData['data'];
+        }
       }
-      if (respData is Map && respData.containsKey('data')) return respData['data'];
-      return respData;
+      return respData; // Fallback: return as is if no specific wrapper found
     } catch (_) {
       return [];
     }
@@ -83,6 +96,10 @@ class _MenuScreenState extends State<MenuScreen> {
 
   String _extractErrorMessage(Object err) {
     try {
+      // If ApiException is used, you can extract its message more cleanly
+      if (err is ApiException) { // Assuming ApiException is defined in api_service.dart
+        return err.message;
+      }
       final s = err.toString();
       return s;
     } catch (_) {
@@ -117,9 +134,17 @@ class _MenuScreenState extends State<MenuScreen> {
     } else {
       value = num.tryParse(amount.toString()) ?? 0;
     }
+    // Sử dụng intl package để định dạng tiền tệ chuyên nghiệp hơn.
+    // Đảm bảo bạn đã thêm intl vào pubspec.yaml và chạy flutter pub get
+    // import 'package:intl/intl.dart';
+    // final formatter = NumberFormat('#,##0', 'vi_VN'); // Ví dụ: 123,456
+    // return '${formatter.format(value.toInt())} VND';
+
+    // Nếu không muốn dùng intl, giữ nguyên cách này:
     final s = value.toInt().toString();
     final reg = RegExp(r'\B(?=(\d{3})+(?!\d))');
-    final withCommas = s.replaceAllMapped(reg, (m) => ',${m.group(0)}');
+    final withCommas = s.replaceAllMapped(
+        reg, (m) => '.${m.group(0)}'); // Sửa ',' thành '.' cho định dạng VNĐ
     return '$withCommas VND';
   }
 
@@ -158,7 +183,9 @@ class _MenuScreenState extends State<MenuScreen> {
                     selected: selectedCategory == 'all',
                     onSelected: (_) => _selectCategory('all'),
                     selectedColor: const Color(0xFF667EEA),
-                    labelStyle: TextStyle(color: selectedCategory == 'all' ? Colors.white : Colors.black87),
+                    labelStyle: TextStyle(
+                        color: selectedCategory == 'all' ? Colors.white : Colors
+                            .black87),
                   ),
                 ),
                 ...categories.map((c) {
@@ -168,11 +195,13 @@ class _MenuScreenState extends State<MenuScreen> {
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 6),
                     child: ChoiceChip(
-                      label: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      label: Text(
+                          name, maxLines: 1, overflow: TextOverflow.ellipsis),
                       selected: isSelected,
                       onSelected: (_) => _selectCategory(id),
                       selectedColor: const Color(0xFF667EEA),
-                      labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black87),
+                      labelStyle: TextStyle(
+                          color: isSelected ? Colors.white : Colors.black87),
                     ),
                   );
                 }).toList(),
@@ -202,7 +231,8 @@ class _MenuScreenState extends State<MenuScreen> {
                 itemCount: foods.length,
                 itemBuilder: (context, i) {
                   final f = foods[i];
-                  final imageUrl = f['anh'] ?? f['image'] ?? f['imageUrl'] ?? '';
+                  final imageUrl = f['anh'] ?? f['image'] ?? f['imageUrl'] ??
+                      '';
                   final name = f['name'] ?? f['foodName'] ?? '-';
                   final price = f['price'] ?? f['gia'] ?? 0;
                   return _FoodCard(
@@ -246,24 +276,29 @@ class _FoodCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6)],
+          // SỬA LỖI TẠI ĐÂY: Xóa từ khóa 'box' thừa
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6)
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Image
             ClipRRect(
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+              borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12), topRight: Radius.circular(12)),
               child: imageUrl.isNotEmpty
                   ? Image.network(
                 imageUrl,
                 height: 120,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  height: 120,
-                  color: Colors.grey.shade200,
-                  child: const Icon(Icons.image, size: 48),
-                ),
+                errorBuilder: (_, __, ___) =>
+                    Container(
+                      height: 120,
+                      color: Colors.grey.shade200,
+                      child: const Icon(Icons.image, size: 48),
+                    ),
               )
                   : Container(
                 height: 120,
@@ -278,18 +313,27 @@ class _FoodCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14), maxLines: 2, overflow: TextOverflow.ellipsis),
+                  Text(name, style: const TextStyle(
+                      fontWeight: FontWeight.w700, fontSize: 14),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Text(priceText, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(priceText,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                       const Spacer(),
                       ElevatedButton(
                         onPressed: () {
                           // placeholder add-to-cart or view detail
                         },
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF667EEA), padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), minimumSize: const Size(0, 32)),
-                        child: const Text('Chọn', style: TextStyle(fontSize: 12)),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF667EEA),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            minimumSize: const Size(0, 32)),
+                        child: const Text(
+                            'Chọn', style: TextStyle(fontSize: 12)),
                       )
                     ],
                   ),
@@ -320,6 +364,7 @@ class _LoadingView extends StatelessWidget {
 class _ErrorView extends StatelessWidget {
   final String error;
   final VoidCallback onRetry;
+
   const _ErrorView({required this.error, required this.onRetry});
 
   @override
@@ -332,9 +377,13 @@ class _ErrorView extends StatelessWidget {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
             const SizedBox(height: 12),
-            Text('Không thể tải menu', style: Theme.of(context).textTheme.titleLarge),
+            Text('Không thể tải menu', style: Theme
+                .of(context)
+                .textTheme
+                .titleLarge),
             const SizedBox(height: 8),
-            Text(error, textAlign: TextAlign.center, style: const TextStyle(color: Colors.black54)),
+            Text(error, textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.black54)),
             const SizedBox(height: 12),
             ElevatedButton(onPressed: onRetry, child: const Text('Thử lại'))
           ],

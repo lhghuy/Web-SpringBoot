@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
+
+// import "package:dio/dio.dart"; // XÓA DÒNG NÀY nếu bạn đang dùng ApiService với package:http
 import '../services/api_service.dart';
 
 class AddItemFormScreen extends StatefulWidget {
@@ -30,9 +31,15 @@ class _AddItemFormScreenState extends State<AddItemFormScreen> {
   Future<void> fetchFoodItems() async {
     setState(() => loading = true);
     try {
-      final res = await api.get('/foods');
+      final res = await api.get('/foods'); // res is Map<String, dynamic>
       setState(() {
-        allFoodItems = res.data;
+        // SỬA LỖI TẠI ĐÂY: Dùng res['data'] thay vì res.data
+        if (res.containsKey('data') && res['data'] is List) {
+          allFoodItems = res['data'];
+        } else {
+          error = res['message'] ?? 'Dữ liệu món ăn không hợp lệ.';
+          allFoodItems = []; // Đảm bảo danh sách rỗng nếu có lỗi
+        }
         loading = false;
       });
     } catch (e) {
@@ -50,15 +57,23 @@ class _AddItemFormScreenState extends State<AddItemFormScreen> {
     setState(() => loading = true);
 
     try {
-      await api.post(
+      final response = await api.post( // Gán phản hồi vào biến response
         '/employee/tables/${widget.tableId}/add',
         data: {"foodItemId": selectedFoodId, "quantity": quantity},
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Thêm món thành công!')),
-        );
-        Navigator.pop(context, true);
+        // Sửa lỗi: Kiểm tra 'success' field từ phản hồi API
+        if (response['success'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Thêm món thành công!')),
+          );
+          Navigator.pop(context, true);
+        } else {
+          String apiMessage = response['message'] ??
+              'Thêm món không thành công.';
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Lỗi: $apiMessage')));
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context)
@@ -86,7 +101,8 @@ class _AddItemFormScreenState extends State<AddItemFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Chọn món:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                  'Chọn món:', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               DropdownButtonFormField<int>(
                 value: selectedFoodId,
@@ -96,10 +112,11 @@ class _AddItemFormScreenState extends State<AddItemFormScreen> {
                 ),
                 items: allFoodItems
                     .map<DropdownMenuItem<int>>(
-                      (item) => DropdownMenuItem<int>(
-                    value: item['foodID'] ?? item['id'],
-                    child: Text(item['name']),
-                  ),
+                      (item) =>
+                      DropdownMenuItem<int>(
+                        value: item['foodID'] ?? item['id'],
+                        child: Text(item['name']),
+                      ),
                 )
                     .toList(),
                 onChanged: (val) => setState(() => selectedFoodId = val),
@@ -107,7 +124,8 @@ class _AddItemFormScreenState extends State<AddItemFormScreen> {
                 val == null ? 'Vui lòng chọn món' : null,
               ),
               const SizedBox(height: 16),
-              const Text('Số lượng:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                  'Số lượng:', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               TextFormField(
                 initialValue: '1',
@@ -135,7 +153,8 @@ class _AddItemFormScreenState extends State<AddItemFormScreen> {
                   label: const Text('Thêm'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepPurple,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 12),
                     textStyle: const TextStyle(fontSize: 16),
                   ),
                   onPressed: loading ? null : submit,

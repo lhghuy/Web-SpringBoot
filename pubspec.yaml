@@ -30,22 +30,19 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  fl_chart: ^0.68.0
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
-
+  http: ^1.1.0 # Để thực hiện các yêu cầu HTTP
+  provider: ^6.0.5 # Để quản lý trạng thái
+  shared_preferences: ^2.2.2 # Để lưu trữ token xác thực (ví dụ)
+  intl: ^0.18.1 # Để định dạng ngày tháng và tiền tệ
+  json_annotation: ^4.8.1 # Để tự động tạo mã từ/sang JSON
+  dio: ^5.0.0
+  fl_chart: ^0.65.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^2.0.0
+  build_runner: ^2.4.6 # Để chạy code generation
+  json_serializable: ^6.7.1 # Tự động tạo mã cho các model
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

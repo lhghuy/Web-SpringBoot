@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
-import 'package:dio/dio.dart';
+import 'package:dio/dio.dart'; // <<< XEM XÉT DÒNG NÀY: Nếu bạn đang dùng ApiService của mình (dùng package:http), thì dòng này có thể không cần và gây nhầm lẫn. Nếu bạn muốn dùng Dio, ApiService cần được viết lại. Tôi sẽ giả định bạn dùng ApiService của mình.
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -45,11 +45,31 @@ class _LoginScreenState extends State<LoginScreen> {
         'password': password,
       });
 
-      // Expecting JSON like: { token: '...', redirectUrl: '/...' }
-      final data = resp.data is Map ? resp.data as Map<String, dynamic> : <String, dynamic>{};
+      // SỬA LỖI TẠI ĐÂY:
+      // `resp` đã là Map<String, dynamic>
+      // Bạn cần kiểm tra xem `resp` có chứa khóa 'token' và 'redirectUrl' trực tiếp không.
+      // Hoặc nếu API của bạn bọc dữ liệu trong một khóa 'data', thì mới cần resp['data'].
+      // Dựa trên comment "Expecting JSON like: { token: '...', redirectUrl: '/...' }",
+      // thì `resp` chính là dữ liệu đó.
 
-      final token = data['token'] as String?;
-      final redirectUrl = data['redirectUrl'] as String?;
+      // Nếu API trả về trực tiếp { token: '...', redirectUrl: '/...' }:
+      final token = resp['token'] as String?;
+      final redirectUrl = resp['redirectUrl'] as String?;
+
+      // HOẶC, nếu API của bạn thực sự bọc response trong một key 'data', ví dụ:
+      // { "success": true, "data": { "token": "...", "redirectUrl": "/..." } }
+      // thì bạn sẽ làm như sau (cách này an toàn hơn):
+      /*
+      final responseData = resp['data'] as Map<String, dynamic>?;
+      if (responseData == null) {
+        setState(() {
+          _errorMessage = 'Không nhận được dữ liệu hợp lệ từ server.';
+        });
+        return;
+      }
+      final token = responseData['token'] as String?;
+      final redirectUrl = responseData['redirectUrl'] as String?;
+      */
 
       if (token != null && token.isNotEmpty) {
         // Save token to SharedPreferences
@@ -75,19 +95,21 @@ class _LoginScreenState extends State<LoginScreen> {
           _errorMessage = 'Không nhận được token từ server.';
         });
       }
-    } on DioError catch (e) {
+      // XEM XÉT LẠI: if on DioError catch (e) { ... }
+      // Nếu bạn đang dùng ApiService của mình (dùng package:http), thì không phải DioError.
+      // Bạn nên bắt ApiException mà ApiService của bạn ném ra.
+      // Nếu bạn muốn dùng Dio, thì ApiService của bạn phải được viết lại để dùng Dio.
+    } on ApiException catch (e) { // SỬA TẠI ĐÂY: Thay DioError bằng ApiException
       String msg = 'Đã xảy ra lỗi. Vui lòng thử lại.';
-      if (e.response != null) {
-        final respData = e.response?.data;
-        if (respData is Map && respData['error'] != null) {
-          msg = respData['error'].toString();
-        } else if (e.response?.statusCode == 401) {
+      if (e.statusCode != null) {
+        // Có thể truy cập thông tin chi tiết hơn từ e.message hoặc statusCode
+        if (e.statusCode == 401) {
           msg = 'Sai tài khoản hoặc mật khẩu!';
-        } else if (respData is String) {
-          msg = respData;
+        } else {
+          msg = e.message; // Sử dụng thông báo lỗi từ ApiException
         }
       } else {
-        msg = e.message ?? msg;
+        msg = e.message; // Sử dụng thông báo lỗi từ ApiException
       }
       setState(() => _errorMessage = msg);
     } catch (e) {
@@ -119,19 +141,22 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: 48,
                       height: 48,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        width: 48,
-                        height: 48,
-                        color: Colors.grey.shade200,
-                        child: const Icon(Icons.restaurant_menu),
-                      ),
+                      errorBuilder: (_, __, ___) =>
+                          Container(
+                            width: 48,
+                            height: 48,
+                            color: Colors.grey.shade200,
+                            child: const Icon(Icons.restaurant_menu),
+                          ),
                     ),
                   ),
                   const Spacer(),
                   TextButton.icon(
-                    onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+                    onPressed: () =>
+                        Navigator.pushReplacementNamed(context, '/'),
                     icon: const Icon(Icons.home, color: Color(0xFF667EEA)),
-                    label: Text('Trang chủ', style: TextStyle(color: Colors.grey[800])),
+                    label: Text(
+                        'Trang chủ', style: TextStyle(color: Colors.grey[800])),
                   ),
                 ],
               ),
@@ -141,11 +166,13 @@ class _LoginScreenState extends State<LoginScreen> {
             Expanded(
               child: Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 24),
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 420),
                     child: Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18)),
                       elevation: 6,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -167,11 +194,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             child: Column(
                               children: const [
-                                Icon(Icons.person, size: 56, color: Colors.white),
+                                Icon(Icons.person, size: 56,
+                                    color: Colors.white),
                                 SizedBox(height: 8),
-                                Text('ĐĂNG NHẬP', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                                Text('ĐĂNG NHẬP', style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold)),
                                 SizedBox(height: 6),
-                                Text('Chào mừng bạn quay trở lại', style: TextStyle(color: Colors.white70)),
+                                Text('Chào mừng bạn quay trở lại',
+                                    style: TextStyle(color: Colors.white70)),
                               ],
                             ),
                           ),
@@ -190,13 +222,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                       decoration: BoxDecoration(
                                         color: Colors.red.withOpacity(0.08),
                                         borderRadius: BorderRadius.circular(8),
-                                        border: Border(left: BorderSide(color: Colors.red.shade700, width: 4)),
+                                        border: Border(left: BorderSide(
+                                            color: Colors.red.shade700,
+                                            width: 4)),
                                       ),
                                       child: Row(
                                         children: [
-                                          const Icon(Icons.error_outline, color: Colors.red),
+                                          const Icon(Icons.error_outline,
+                                              color: Colors.red),
                                           const SizedBox(width: 8),
-                                          Expanded(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red))),
+                                          Expanded(child: Text(_errorMessage!,
+                                              style: const TextStyle(
+                                                  color: Colors.red))),
                                         ],
                                       ),
                                     ),
@@ -209,13 +246,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                       decoration: BoxDecoration(
                                         color: Colors.green.withOpacity(0.08),
                                         borderRadius: BorderRadius.circular(8),
-                                        border: Border(left: BorderSide(color: Colors.green.shade700, width: 4)),
+                                        border: Border(left: BorderSide(
+                                            color: Colors.green.shade700,
+                                            width: 4)),
                                       ),
                                       child: Row(
                                         children: [
-                                          const Icon(Icons.check_circle, color: Colors.green),
+                                          const Icon(Icons.check_circle,
+                                              color: Colors.green),
                                           const SizedBox(width: 8),
-                                          Expanded(child: Text(_successMessage!, style: const TextStyle(color: Colors.green))),
+                                          Expanded(child: Text(_successMessage!,
+                                              style: const TextStyle(
+                                                  color: Colors.green))),
                                         ],
                                       ),
                                     ),
@@ -224,9 +266,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
                                   // Username
                                   Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment
+                                        .start,
                                     children: [
-                                      const Text('Tài khoản', style: TextStyle(fontWeight: FontWeight.w600)),
+                                      const Text('Tài khoản', style: TextStyle(
+                                          fontWeight: FontWeight.w600)),
                                       const SizedBox(height: 8),
                                       TextFormField(
                                         controller: _usernameCtrl,
@@ -235,11 +279,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                           hintText: 'Nhập tài khoản của bạn',
                                           filled: true,
                                           fillColor: const Color(0xFFF9FAFB),
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                          border: OutlineInputBorder(
+                                              borderRadius: BorderRadius
+                                                  .circular(12),
+                                              borderSide: BorderSide.none),
                                         ),
-                                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập tài khoản' : null,
+                                        validator: (v) =>
+                                        (v == null || v
+                                            .trim()
+                                            .isEmpty)
+                                            ? 'Vui lòng nhập tài khoản'
+                                            : null,
                                         textInputAction: TextInputAction.next,
-                                        autofillHints: const [AutofillHints.username],
+                                        autofillHints: const [
+                                          AutofillHints.username
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -247,9 +301,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
                                   // Password
                                   Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment
+                                        .start,
                                     children: [
-                                      const Text('Mật khẩu', style: TextStyle(fontWeight: FontWeight.w600)),
+                                      const Text('Mật khẩu', style: TextStyle(
+                                          fontWeight: FontWeight.w600)),
                                       const SizedBox(height: 8),
                                       TextFormField(
                                         controller: _passwordCtrl,
@@ -259,11 +315,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                           hintText: 'Nhập mật khẩu của bạn',
                                           filled: true,
                                           fillColor: const Color(0xFFF9FAFB),
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                          border: OutlineInputBorder(
+                                              borderRadius: BorderRadius
+                                                  .circular(12),
+                                              borderSide: BorderSide.none),
                                         ),
-                                        validator: (v) => (v == null || v.isEmpty) ? 'Vui lòng nhập mật khẩu' : null,
+                                        validator: (v) =>
+                                        (v == null || v.isEmpty)
+                                            ? 'Vui lòng nhập mật khẩu'
+                                            : null,
                                         textInputAction: TextInputAction.done,
-                                        autofillHints: const [AutofillHints.password],
+                                        autofillHints: const [
+                                          AutofillHints.password
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -276,20 +340,33 @@ class _LoginScreenState extends State<LoginScreen> {
                                     child: ElevatedButton(
                                       onPressed: _loading ? null : _submit,
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFFDF3333),
-                                        padding: const EdgeInsets.symmetric(vertical: 14),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        backgroundColor: const Color(
+                                            0xFFDF3333),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 14),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                                12)),
                                       ),
                                       child: _loading
                                           ? Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment: MainAxisAlignment
+                                            .center,
                                         children: const [
-                                          SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+                                          SizedBox(width: 18,
+                                              height: 18,
+                                              child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: Colors.white)),
                                           SizedBox(width: 12),
-                                          Text('Đang đăng nhập...', style: TextStyle(fontWeight: FontWeight.w700)),
+                                          Text('Đang đăng nhập...',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w700)),
                                         ],
                                       )
-                                          : const Text('Đăng nhập', style: TextStyle(fontWeight: FontWeight.w700)),
+                                          : const Text('Đăng nhập',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w700)),
                                     ),
                                   ),
                                 ],
@@ -308,7 +385,8 @@ class _LoginScreenState extends State<LoginScreen> {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 14),
               color: Colors.white,
-              child: const Text('© 2024 TeamFOOD. Tất cả quyền được bảo lưu.', style: TextStyle(color: Colors.grey)),
+              child: const Text('© 2024 TeamFOOD. Tất cả quyền được bảo lưu.',
+                  style: TextStyle(color: Colors.grey)),
             ),
           ],
         ),

@@ -16,7 +16,8 @@ class AdminDashboardScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: CircleAvatar(
-              backgroundImage: AssetImage("assets/avatar.png"), // đổi thành NetworkImage nếu cần
+              backgroundImage: AssetImage(
+                  "assets/avatar.png"), // Đảm bảo asset này tồn tại và được khai báo
             ),
           ),
         ],
@@ -90,12 +91,21 @@ class AdminDashboardScreen extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate:
-      const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 2),
+      const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 2),
       itemCount: actions.length,
       itemBuilder: (context, i) {
         final item = actions[i];
         return InkWell(
-          onTap: () {},
+          onTap: () {
+            // TODO: Xử lý điều hướng khi nhấn vào các nút hành động nhanh
+            // Ví dụ:
+            // if (item["label"] == "Hoá đơn") {
+            //   Navigator.of(context).push(MaterialPageRoute(builder: (context) => AdminOrderScreen()));
+            // }
+          },
           borderRadius: BorderRadius.circular(12),
           child: Container(
             decoration: BoxDecoration(
@@ -143,7 +153,10 @@ class AdminDashboardScreen extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       itemCount: stats.length,
       gridDelegate:
-      const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.6),
+      const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 1.6),
       itemBuilder: (context, i) {
         final s = stats[i];
         return Container(
@@ -205,7 +218,8 @@ class AdminDashboardScreen extends StatelessWidget {
               isCurved: true,
               color: const Color(0xFF667EEA),
               barWidth: 3,
-              belowBarData: BarAreaData(show: true, color: const Color(0xFF667EEA).withOpacity(0.15)),
+              belowBarData: BarAreaData(
+                  show: true, color: const Color(0xFF667EEA).withOpacity(0.15)),
               spots: const [
                 FlSpot(0, 32),
                 FlSpot(1, 28),
@@ -254,11 +268,16 @@ class AdminDashboardScreen extends StatelessWidget {
       child: PieChart(
         PieChartData(
           sections: [
-            PieChartSectionData(value: 30, color: const Color(0xFF667EEA), title: "Phở Bò"),
-            PieChartSectionData(value: 25, color: const Color(0xFF56AB2F), title: "Bánh Mì"),
-            PieChartSectionData(value: 20, color: const Color(0xFFF093FB), title: "Cơm Tấm"),
-            PieChartSectionData(value: 15, color: const Color(0xFF4FACFE), title: "Bún Chả"),
-            PieChartSectionData(value: 10, color: const Color(0xFFFF9F40), title: "Khác"),
+            PieChartSectionData(
+                value: 30, color: const Color(0xFF667EEA), title: "Phở Bò"),
+            PieChartSectionData(
+                value: 25, color: const Color(0xFF56AB2F), title: "Bánh Mì"),
+            PieChartSectionData(
+                value: 20, color: const Color(0xFFF093FB), title: "Cơm Tấm"),
+            PieChartSectionData(
+                value: 15, color: const Color(0xFF4FACFE), title: "Bún Chả"),
+            PieChartSectionData(
+                value: 10, color: const Color(0xFFFF9F40), title: "Khác"),
           ],
           sectionsSpace: 2,
           centerSpaceRadius: 40,
